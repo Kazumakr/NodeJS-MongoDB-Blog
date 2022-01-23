@@ -105,13 +105,27 @@ const dislikeSchema = new Schema({
 });
 const Dislike = mongoose.model("Dislike", dislikeSchema);
 
+let isLoggedIn = false;
+// const isLoggedIn = (req, res, next) => {
+// 	if (req.isAuthenticated()) {
+// 		next();
+// 	} else {
+// 		res.redirect("/login");
+// 	}
+// };
+let currentUser = "";
+
 //home
 app.get("/", (req, res) => {
 	Post.find({}, (err, posts) => {
 		if (err) {
 			console.log(err);
 		} else {
-			res.render("home", { posts: posts });
+			res.render("home", {
+				posts: posts,
+				isLoggedIn: isLoggedIn,
+				currentUser: currentUser,
+			});
 		}
 	});
 });
@@ -122,14 +136,18 @@ app.get("/blogs", (req, res) => {
 		if (err) {
 			console.log(err);
 		} else {
-			res.render("home", { posts: posts });
+			res.render("home", {
+				posts: posts,
+				isLoggedIn: isLoggedIn,
+				currentUser: currentUser,
+			});
 		}
 	});
 });
 
 //create form
 app.get("/blogs/new", (req, res) => {
-	res.render("addPost");
+	res.render("addPost", { currentUser: currentUser });
 });
 
 //add new post to DB
@@ -149,16 +167,6 @@ app.post("/blogs", (req, res) => {
 });
 
 //single blog post
-// app.get("/blogs/:id", (req, res) => {
-// 	Post.findById(req.params.id, (err, post) => {
-// 		if (err) {
-// 			console.log(err);
-// 		} else {
-// 			res.render("post", { post: post });
-// 		}
-// 	});
-// });
-
 app.get("/blogs/:id", (req, res) => {
 	Post.findById(req.params.id)
 		.populate("comments")
@@ -166,7 +174,7 @@ app.get("/blogs/:id", (req, res) => {
 			if (err) {
 				console.log(err);
 			} else {
-				res.render("post", { post: post });
+				res.render("post", { post: post, currentUser: currentUser });
 			}
 		});
 });
@@ -177,7 +185,7 @@ app.get("/blogs/:id/edit", (req, res) => {
 		if (err) {
 			console.log(err);
 		} else {
-			res.render("edit-post", { post: post });
+			res.render("edit-post", { post: post, currentUser: currentUser });
 		}
 	});
 });
@@ -214,7 +222,7 @@ app.delete("/blogs/:id", (req, res) => {
 
 //authentication
 app.get("/signup", (req, res) => {
-	res.render("signup");
+	res.render("signup", { currentUser: currentUser });
 });
 
 app.post("/signup", (req, res) => {
@@ -225,10 +233,6 @@ app.post("/signup", (req, res) => {
 			if (err) {
 				console.log(err);
 			} else {
-				// passport.authenticate("local", {
-				// 	failureRedirect: "/login",
-				// 	successRedirect: "/",
-				// });
 				passport.authenticate("local")(req, res, () => {
 					console.log("=========user registerd");
 					// console.log(user);
@@ -241,75 +245,41 @@ app.post("/signup", (req, res) => {
 
 //login form
 app.get("/login", (req, res) => {
-	res.render("login");
+	res.render("login", { currentUser: currentUser });
 });
 
-// app.post("/login", (req, res, next) => {
-// 	passport.authenticate("local", (err, user, info) => {
-// 		if (err) {
-// 			return next(err);
-// 		}
-// 		if (!user) {
-// 			return res.redirect("/login");
-// 		}
-// 		req.logIn(user, (err) => {
-// 			if (err) {
-// 				return next(err);
-// 			}
+app.post("/login", (req, res, next) => {
+	passport.authenticate("local", (err, user, info) => {
+		if (err) {
+			return next(err);
+		}
+		if (!user) {
+			return res.redirect("/login");
+		}
+		req.logIn(user, (err) => {
+			if (err) {
+				return next(err);
+			}
+			isLoggedIn = true;
+			currentUser = req.user.username;
 
-// 			return res.redirect("/");
-// 			// return res.redirect("/" + req.user.username);
-// 		});
-// 	})(req, res, next);
-// });
-
-app.post(
-	"/login",
-	passport.authenticate("local", {
-		failureRedirect: "/login",
-
-		successRedirect: "/",
-		session: true,
-	})
-	// (req, res) => {
-
-	// }
-);
-
-// app.post("/login", (req, res) => {
-// 	const user = new User({
-// 		username: req.body.username,
-// 		password: req.body.password,
-// 	});
-// 	req.login(user, (err) => {
-// 		if (err) {
-// 			console.log(err);
-// 		} else {
-// 			console.log("user logged in");
-// 			console.log(user);
-// 			res.redirect("/");
-// 		}
-// 	});
-// });
+			return res.redirect("/");
+		});
+	})(req, res, next);
+});
 
 //logout
 app.get("/logout", (req, res) => {
 	req.logout();
+	isLoggedIn = false;
+	currentUser = "";
 	res.redirect("/");
 });
-
-const isLoggedIn = (req, res, next) => {
-	if (req.isAuthenticated()) {
-		next();
-	} else {
-		res.redirect("/login");
-	}
-};
 
 //comment
 app.post("/blogs/:id/comments", (req, res) => {
 	const comment = new Comment({
-		author: "test author",
+		author: currentUser,
 		comment: req.body.comment,
 	});
 	comment.save((err, result) => {
@@ -322,8 +292,6 @@ app.post("/blogs/:id/comments", (req, res) => {
 				} else {
 					post.comments.push(result);
 					post.save();
-
-					console.log(result);
 					res.redirect("/");
 				}
 			});
@@ -355,24 +323,6 @@ app.post("/blogs/:id/like", (req, res) => {
 	});
 });
 
-// app.put("/blogs/:id/like", (req, res) => {
-// 	Post.findByIdAndUpdate(
-// 		req.params.id,
-// 		{
-// 			$push: { likes: req.user._id },
-// 		},
-// 		{
-// 			new: true,
-// 		}
-// 	).exec((err, result) => {
-// 		if (err) {
-// 			return res.status(422).json({ error: err });
-// 		} else {
-// 			res.json(result);
-// 		}
-// 	});
-// });
-
 //unlike
 app.post("/blogs/:id/dislike", (req, res) => {
 	const dislike = new Dislike({
@@ -396,24 +346,6 @@ app.post("/blogs/:id/dislike", (req, res) => {
 		}
 	});
 });
-
-// app.put("/unlike", (req, res) => {
-// 	Post.findByIdAndUpdate(
-// 		req.params.id,
-// 		{
-// 			$pull: { likes: req.user._id },
-// 		},
-// 		{
-// 			new: true,
-// 		}
-// 	).exec((err, result) => {
-// 		if (err) {
-// 			return res.status(422).json({ error: err });
-// 		} else {
-// 			res.json(result);
-// 		}
-// 	});
-// });
 
 app.listen(5000, () => {
 	console.log("Server is running");
