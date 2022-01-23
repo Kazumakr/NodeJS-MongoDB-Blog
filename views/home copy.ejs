@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+	<%- include('partials/head') %>
+	<body>
+		<%- include('partials/nav') %>
+		<div class="container">
+			<div class="container pt-5">
+				<div class="p-5 bg-dark text-light text-center">
+					<h1 class="p-5 display-5">Read My Daily Blogs!</h1>
+				</div>
+
+				<div class="container pt-3">
+					<div class="row">
+						<% for(let post of posts){ %>
+						<div class="col-3 p-2 border">
+							<a href="/blogs/<%= post._id %>">
+								<!-- <img src="<%= post.image %>" alt="" class="img-fluid" /> -->
+								<img
+									src="https://media.istockphoto.com/photos/downtown-or-island-picture-id962362664?b=1&k=20&m=962362664&s=170667a&w=0&h=7gTyErl0xDcPE1vj834rpt8rzzdfoNu-VdKolOnGo6I="
+									alt=""
+									class="img-fluid"
+								/>
+							</a>
+						</div>
+						<div class="col-9 p-2 border">
+							<h2><a href="/blogs/<%= post._id %>"><%= post.title %></a></h2>
+							<p class="lead"><%= post.description.substring(0,300) %></p>
+							<a href="/blogs/<%= post._id %>">
+								<button class="btn btn-primary btn-sm">Read More</button>
+							</a>
+						</div>
+						<% } %>
+					</div>
+				</div>
+			</div>
+		</div>
+		<%- include('partials/footer') %>
+	</body>
+</html>

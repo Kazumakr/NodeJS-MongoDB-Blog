@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+	<%- include('partials/head') %>
+	<body>
+		<%- include('partials/nav') %>
+
+		<div class="container pt-5">
+			<div class="container">
+				<div class="row">
+					<div class="col-12">
+						<img src="<%=post.image %>" alt="" class="img-fluid" width="100%" />
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-12">
+						<h1 class="pt-2"><%= post.title %></h1>
+					</div>
+					<!-- <div class="col-12">
+						<p class="p-2">Author : <%= "human" %> Date : 01/01/2022</p>
+					</div> -->
+				</div>
+				<div class="row">
+					<div class="col-12">
+						<p class="lead"><%= post.description %></p>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-12 d-flex">
+						<form method="POST" action="/blogs/<%= post._id %>?_method=DELETE">
+							<button class="btn btn-danger" type="submit">Delete</button>
+						</form>
+						<a
+							href="/blogs/<%= post._id %>/edit"
+							class="btn btn-secondary"
+							style="margin-left: 10px"
+							>Edit</a
+						>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="container pt-2 d-flex">
+			<form action="/blogs/<%= post._id%>/like" method="POST">
+				<button class="btn btn-default" type="submit">
+					<i class="fa fa-thumbs-up"></i>
+					<span id="likes"><%= post.likes.length %></span>
+				</button>
+			</form>
+			<form action="/blogs/<%= post._id%>/dislike" method="POST">
+				<button class="btn btn-default" type="submit">
+					<i class="fa fa-thumbs-down"></i>
+					<span id="dislikes"><%= post.dislikes.length %></span>
+				</button>
+			</form>
+		</div>
+
+		<div class="container pt-2">
+			<div class="container">
+				<form action="/blogs/<%= post._id%>/comments" method="POST">
+					<div class="form-group">
+						<textarea
+							class="form-control"
+							placeholder="Leave a comment here"
+							rows="4"
+							name="comment"
+						></textarea>
+					</div>
+					<div class="form-group pt-2">
+						<button class="btn btn-primary w-100">Submit</button>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<div class="container pt-5">
+			<div class="container">
+				<div class="row">
+					<% post.comments.forEach((comment)=>{%>
+					<div class="col-12">
+						<p>
+							<strong><%= comment.author%></strong>
+							<br />
+							<%= comment.comment%> <%})%>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<%- include('partials/footer') %>
+	</body>
+</html>

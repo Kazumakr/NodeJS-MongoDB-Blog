@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+	<%- include('partials/head') %>
+	<body>
+		<%- include('partials/nav') %>
+
+		<div class="container">
+			<div class="container pt-5">
+				<div class="bg-light p-5">
+					<h1 class="text-center">Edit <%= post.title %></h1>
+					<div class="pt-5">
+						<form
+							class="row g-3"
+							action="/blogs/<%= post._id %>/?_method=PUT"
+							method="POST"
+						>
+							<div class="col-12">
+								<label for="title" class="form-label">Title</label>
+								<input
+									type="text"
+									name="title"
+									class="form-control"
+									id="title"
+									value="<%= post.title %>"
+								/>
+							</div>
+
+							<div class="col-12">
+								<label for="imageUrl" class="form-label">Image URL</label>
+								<input
+									type="text"
+									name="image"
+									class="form-control"
+									id="imageURL"
+									value="<%= post.image %>"
+								/>
+							</div>
+							<div class="col-12">
+								<label for="description" class="form-label">Description</label>
+								<textarea
+									type="text"
+									class="form-control"
+									id="description"
+									name="description"
+								>
+<%= post.description %>"</textarea
+								>
+							</div>
+
+							<div class="col-12">
+								<button type="submit" class="btn w-100 btn-primary">
+									Publish
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<%- include('partials/footer') %>
+	</body>
+</html>

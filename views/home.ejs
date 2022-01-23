@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+	<%- include('partials/head') %>
+	<body>
+		<%- include('partials/nav') %>
+		<div class="container">
+			<div class="container pt-5">
+				<div class="p-5 jumbotron jumbotron-fluid">
+					<div class="container text-center">
+						<h1 class="display-5">Welcome to my Node Blog</h1>
+						<p class="lead">This is a subtitle</p>
+					</div>
+				</div>
+
+				<div class="container mt-3">
+					<div class="container d-flex flex-wrap justify-content-start">
+						<% for(let post of posts){ %>
+
+						<div
+							class="card"
+							style="width: 18rem; margin-left: 10px; margin-bottom: 10px"
+						>
+							<img class="card-img-top" src="<%= post.image %>" alt="" />
+							<div class="card-body">
+								<h5 class="card-title"><%= post.title %></h5>
+								<p class="card-text">
+									<%= post.description.substring(0,100) %>...
+								</p>
+								<a href="/blogs/<%= post._id %>" class="btn btn-primary btn-sm"
+									>Read More</a
+								>
+							</div>
+						</div>
+
+						<% } %>
+					</div>
+				</div>
+			</div>
+		</div>
+		<%- include('partials/footer') %>
+	</body>
+</html>
