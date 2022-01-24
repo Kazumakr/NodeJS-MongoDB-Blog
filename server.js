@@ -1,11 +1,11 @@
 const express = require("express");
-const ejs = require("ejs");
+// const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const methodOverride = require("method-override");
 
 const passport = require("passport");
 const session = require("express-session");
-const passportLocal = require("passport-local");
+// const passportLocal = require("passport-local");
 const passportLocalMongoose = require("passport-local-mongoose");
 
 const app = express();
@@ -302,23 +302,32 @@ app.post("/blogs/:id/comments", (req, res) => {
 //like
 app.post("/blogs/:id/like", (req, res) => {
 	const like = new Like({
-		liker: "test",
+		liker: currentUser,
 	});
+	let isLiked = false;
 	like.save((err, result) => {
 		if (err) {
 			console.log(err);
 		} else {
-			Post.findById(req.params.id, (err, post) => {
-				if (err) {
-					console.log(err);
-				} else {
-					post.likes.push(result);
-					post.save();
-
-					console.log(result);
-					res.redirect("/");
-				}
-			});
+			Post.findById(req.params.id)
+				.populate("likes")
+				.exec((err, post) => {
+					if (err) {
+						console.log(err);
+					} else {
+						post.likes.forEach((item) => {
+							if (item.liker === result.liker) {
+								post.likes.pull(item);
+								isLiked = true;
+							}
+						});
+						if (!isLiked) {
+							post.likes.push(result);
+						}
+						post.save();
+						res.redirect("/");
+					}
+				});
 		}
 	});
 });
@@ -326,23 +335,32 @@ app.post("/blogs/:id/like", (req, res) => {
 //unlike
 app.post("/blogs/:id/dislike", (req, res) => {
 	const dislike = new Dislike({
-		disliker: "test",
+		disliker: currentUser,
 	});
+	let isDisliked = false;
 	dislike.save((err, result) => {
 		if (err) {
 			console.log(err);
 		} else {
-			Post.findById(req.params.id, (err, post) => {
-				if (err) {
-					console.log(err);
-				} else {
-					post.dislikes.push(result);
-					post.save();
-
-					console.log(result);
-					res.redirect("/");
-				}
-			});
+			Post.findById(req.params.id)
+				.populate("dislikes")
+				.exec((err, post) => {
+					if (err) {
+						console.log(err);
+					} else {
+						post.dislikes.forEach((item) => {
+							if (item.disliker === result.disliker) {
+								post.dislikes.pull(item);
+								isDisliked = true;
+							}
+						});
+						if (!isDisliked) {
+							post.dislikes.push(result);
+						}
+						post.save();
+						res.redirect("/");
+					}
+				});
 		}
 	});
 });
