@@ -301,68 +301,76 @@ app.post("/blogs/:id/comments", (req, res) => {
 
 //like
 app.post("/blogs/:id/like", (req, res) => {
-	const like = new Like({
-		liker: currentUser,
-	});
-	let isLiked = false;
-	like.save((err, result) => {
-		if (err) {
-			console.log(err);
-		} else {
-			Post.findById(req.params.id)
-				.populate("likes")
-				.exec((err, post) => {
-					if (err) {
-						console.log(err);
-					} else {
-						post.likes.forEach((item) => {
-							if (item.liker === result.liker) {
-								post.likes.pull(item);
-								isLiked = true;
+	if (isLoggedIn) {
+		const like = new Like({
+			liker: currentUser,
+		});
+		let isLiked = false;
+		like.save((err, result) => {
+			if (err) {
+				console.log(err);
+			} else {
+				Post.findById(req.params.id)
+					.populate("likes")
+					.exec((err, post) => {
+						if (err) {
+							console.log(err);
+						} else {
+							post.likes.forEach((item) => {
+								if (item.liker === result.liker) {
+									post.likes.pull(item);
+									isLiked = true;
+								}
+							});
+							if (!isLiked) {
+								post.likes.push(result);
 							}
-						});
-						if (!isLiked) {
-							post.likes.push(result);
+							post.save();
+							res.redirect("/");
 						}
-						post.save();
-						res.redirect("/");
-					}
-				});
-		}
-	});
+					});
+			}
+		});
+	} else {
+		res.redirect("/login");
+	}
 });
 
 //unlike
 app.post("/blogs/:id/dislike", (req, res) => {
-	const dislike = new Dislike({
-		disliker: currentUser,
-	});
-	let isDisliked = false;
-	dislike.save((err, result) => {
-		if (err) {
-			console.log(err);
-		} else {
-			Post.findById(req.params.id)
-				.populate("dislikes")
-				.exec((err, post) => {
-					if (err) {
-						console.log(err);
-					} else {
-						post.dislikes.forEach((item) => {
-							if (item.disliker === result.disliker) {
-								post.dislikes.pull(item);
-								isDisliked = true;
+	if (isLoggedIn) {
+		const dislike = new Dislike({
+			disliker: currentUser,
+		});
+		let isDisliked = false;
+		dislike.save((err, result) => {
+			if (err) {
+				console.log(err);
+			} else {
+				Post.findById(req.params.id)
+					.populate("dislikes")
+					.exec((err, post) => {
+						if (err) {
+							console.log(err);
+						} else {
+							post.dislikes.forEach((item) => {
+								if (item.disliker === result.disliker) {
+									post.dislikes.pull(item);
+									isDisliked = true;
+								}
+							});
+							if (!isDisliked) {
+								post.dislikes.push(result);
 							}
-						});
-						if (!isDisliked) {
-							post.dislikes.push(result);
+							post.save();
+							res.redirect("/");
 						}
-						post.save();
-						res.redirect("/");
-					}
-				});
-		}
-	});
+					});
+			}
+		});
+	} else {
+		res.redirect("/login");
+	}
 });
 
 app.listen(5000, () => {
